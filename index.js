@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import cors from 'cors';
 
 import dotenv from 'dotenv';
@@ -6,6 +7,14 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const PORT = process.env.PORT || 4444;
+
+mongoose.connect(
+    process.env.DB_CON
+).then(() =>
+    console.log("DB ok!")
+).catch(err => {
+    console.log("DB error ", err);
+})
 
 const app = express();
 
