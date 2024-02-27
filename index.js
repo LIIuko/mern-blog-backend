@@ -2,6 +2,11 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from 'cors';
 
+import { registerValidation, loginValidation } from "./validations.js";
+
+import { checkAuth, handleValidationErrors } from "./utils/index.js";
+import { UserController} from './controllers/index.js';
+
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -20,6 +25,10 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
+
+app.post('/auth/registration', registerValidation, handleValidationErrors, UserController.register)
+app.post('/auth/login', loginValidation, handleValidationErrors, UserController.login)
+app.get('/auth/me', checkAuth, UserController.getMe)
 
 
 app.listen(PORT, (err) => {
