@@ -5,8 +5,8 @@ dotenv.config();
 
 export const getTags = async (req, res) => {
     try {
-        const posts = await PostModel.find().limit(5).exec();
-        const tags = Array.from(new Set(posts.map(obj => obj.tags).flat().slice(0, 5)));
+        const posts = await PostModel.find().limit(100).exec();
+        const tags = Array.from(new Set(posts.map(obj => obj.tags).flat())).slice(0, 5);
 
         res.json(tags);
     } catch (err) {
@@ -40,7 +40,9 @@ export const getOne = async (req, res) => {
             $inc: { viewsCount: 1 }
         }, {
             returnDocument: 'after'
-        }).then((doc, err) => {
+        }).populate({ path: "user", select: ["fullName", "avatarUrl"] })
+            .exec()
+            .then((doc, err) => {
             if (err) {
                 console.log(err);
                 return res.status(500).json({
