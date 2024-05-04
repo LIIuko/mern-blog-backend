@@ -9,6 +9,7 @@ import { checkAuth, handleValidationErrors } from "./utils/index.js";
 import { UserController, PostController } from './controllers/index.js';
 
 import dotenv from 'dotenv';
+import {addComment} from "./controllers/PostController.js";
 
 dotenv.config();
 
@@ -62,6 +63,7 @@ app.get('/posts/:id', PostController.getOne)
 app.post('/posts', checkAuth, postCreateValidation, handleValidationErrors, PostController.create)
 app.delete('/posts/:id', checkAuth, PostController.remove)
 app.patch('/posts/:id', checkAuth, postCreateValidation, handleValidationErrors, PostController.update)
+app.post('/posts/:id/comments', checkAuth, PostController.addComment);
 
 
 app.listen(PORT, (err) => {

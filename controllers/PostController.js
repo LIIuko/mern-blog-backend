@@ -1,12 +1,14 @@
 import PostModel from '../models/Post.js'
+import CommentModel from '../models/Comment.js'
 
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 export const getTags = async (req, res) => {
     try {
         const posts = await PostModel.find().limit(5).exec();
-        const tags = Array.from(new Set(posts.map(obj => obj.tags).flat().slice(0, 5)));
+        const tags = Array.from(new Set(posts.map(obj => obj.tags).flat())).slice(0, 5);
 
         res.json(tags);
     } catch (err) {
@@ -19,7 +21,16 @@ export const getTags = async (req, res) => {
 
 export const getAll = async (req, res) => {
     try {
-        const posts = await PostModel.find().populate({ path: "user", select: ["fullName", "avatarUrl"] }).exec();
+        const posts = await PostModel.find()
+            .populate({
+                path: "user",
+                select: ["fullName", "avatarUrl"]
+            })
+            .populate({
+                path: "comments",
+                select: ["text", "user"]
+            })
+            .exec();
 
         res.json(posts);
     } catch (err) {
@@ -37,10 +48,20 @@ export const getOne = async (req, res) => {
         PostModel.findOneAndUpdate({
             _id: postId
         }, {
-            $inc: { viewsCount: 1 }
+            $inc: {viewsCount: 1}
         }, {
             returnDocument: 'after'
-        }).then((doc, err) => {
+        })
+        .populate({
+            path: "comments",
+            select: ["text", "user"],
+            populate: {
+                path: "user",
+                select: "fullName avatarUrl" // Загрузка имени и аватара пользователя комментария
+            }
+        })
+        .exec()
+        .then((doc, err) => {
             if (err) {
                 console.log(err);
                 return res.status(500).json({
@@ -101,8 +122,6 @@ export const update = async (req, res) => {
     try {
         const postId = req.params.id;
 
-        console.log(req.body)
-
         PostModel.updateOne({
             _id: postId
         }, {
@@ -154,6 +173,39 @@ export const create = async (req, res) => {
         console.log(err);
         res.status(500).json({
             message: 'Не удалось создать статью'
+        });
+    }
+}
+
+export const addComment = async (req, res) => {
+    const postId = req.params.id; // ID поста, к которому добавляется комментарий
+    const userId = req.userId; // Предполагаем, что userId берётся из токена аутентификации (например, JWT)
+
+    try {
+        // Создание нового комментария
+        const comment = new CommentModel({
+            text: req.body.text,
+            user: userId
+        });
+
+        // Сохранение комментария в базе данных
+        await comment.save();
+
+        // Добавление комментария к посту
+        await PostModel.findByIdAndUpdate(postId, {
+            $push: {comments: comment._id}
+        });
+
+        res.status(201).json({
+            success: true,
+            commentId: comment._id,
+            message: 'Комментарий успешно добавлен'
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'Не удалось добавить комментарий'
         });
     }
 }
