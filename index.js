@@ -3,6 +3,8 @@ import multer from "multer";
 import mongoose from "mongoose";
 import cors from 'cors';
 
+import Image from "./models/Image.js";
+
 import { registerValidation, loginValidation, postCreateValidation } from "./validations.js";
 
 import { checkAuth, handleValidationErrors } from "./utils/index.js";
@@ -26,22 +28,24 @@ mongoose.connect(
 const app = express();
 
 
-const storage = multer.diskStorage({
-    destination: (_, __, cb) => {
-        cb(null, 'uploads');
-    },
-    filename: (_, file, cb) => {
-        cb(null, file.originalname);
-    },
-});
+// const storage = multer.diskStorage({
+//     destination: (_, __, cb) => {
+//         cb(null, 'uploads');
+//     },
+//     filename: (_, file, cb) => {
+//         cb(null, file.originalname);
+//     },
+// });
 
 
-const upload = multer({ storage });
+// const upload = multer({ storage });
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 
 app.use(express.json());
 app.use(cors());
-app.use('/uploads', express.static('uploads'));
+// app.use('/uploads', express.static('uploads'));
 
 
 app.post('/auth/registration', registerValidation, handleValidationErrors, UserController.register)
@@ -50,11 +54,42 @@ app.get('/auth/me', checkAuth, UserController.getMe)
 app.get('/auth/user/:id', UserController.getUser)
 
 
-app.post('/upload', upload.single('image'), (req, res) => {
-    res.json({
-        url: `/uploads/${req.file.originalname}`,
-    })
-})
+// app.post('/upload', upload.single('image'), (req, res) => {
+//     res.json({
+//         url: `/uploads/${req.file.originalname}`,
+//     })
+// })
+
+app.post('/upload', upload.single('image'), async (req, res) => {
+    try {
+        const newImage = new Image({
+            name: req.file.originalname,
+            img: {
+                data: req.file.buffer,
+                contentType: req.file.mimetype
+            }
+        });
+        await newImage.save();
+        res.json({id: newImage._id });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error saving image' });
+    }
+});
+
+app.get('/uploads/:id', async (req, res) => {
+    try {
+        const image = await Image.findById(req.params.id);
+        if (!image || !image.img.data) {
+            return res.status(404).send('Image not found');
+        }
+        res.set('Content-Type', image.img.contentType);
+        res.send(image.img.data);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server error');
+    }
+});
 
 
 app.get('/posts', PostController.getAll)

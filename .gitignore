@@ -129,7 +129,7 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# custom
-uploads/
+## custom
+#uploads
 # Local Netlify folder
 .netlify

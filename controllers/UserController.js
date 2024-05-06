@@ -16,7 +16,7 @@ export const register = async (req, res) => {
             email: req.body.email,
             fullName: req.body.fullName,
             passwordHash: hash,
-            avatarUrl: req.body.avatarUrl,
+            avatarUrl: `http://localhost:4444/uploads/${req.body.avatarUrl}`,
         })
 
         const user = await doc.save();
