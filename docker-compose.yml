@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  backend:
+    container_name: backend
+    build:
+      context: .
+    env_file:
+      - .env
+    ports:
+      - "4444:4444"
+    volumes:
+      - /node_modules
+    command: npm run start:dev

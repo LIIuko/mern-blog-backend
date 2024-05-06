@@ -131,3 +131,5 @@ dist
 
 # custom
 uploads/
+# Local Netlify folder
+.netlify
