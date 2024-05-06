@@ -9,7 +9,6 @@ import { checkAuth, handleValidationErrors } from "./utils/index.js";
 import { UserController, PostController } from './controllers/index.js';
 
 import dotenv from 'dotenv';
-import {addComment} from "./controllers/PostController.js";
 
 dotenv.config();
 
@@ -48,9 +47,10 @@ app.use('/uploads', express.static('uploads'));
 app.post('/auth/registration', registerValidation, handleValidationErrors, UserController.register)
 app.post('/auth/login', loginValidation, handleValidationErrors, UserController.login)
 app.get('/auth/me', checkAuth, UserController.getMe)
+app.get('/auth/user/:id', UserController.getUser)
 
 
-app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
+app.post('/upload', upload.single('image'), (req, res) => {
     res.json({
         url: `/uploads/${req.file.originalname}`,
     })

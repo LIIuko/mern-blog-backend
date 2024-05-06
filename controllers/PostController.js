@@ -7,7 +7,7 @@ dotenv.config();
 
 export const getTags = async (req, res) => {
     try {
-        const posts = await PostModel.find().limit(5).exec();
+        const posts = await PostModel.find().limit(100).exec();
         const tags = Array.from(new Set(posts.map(obj => obj.tags).flat())).slice(0, 5);
 
         res.json(tags);
@@ -53,12 +53,16 @@ export const getOne = async (req, res) => {
             returnDocument: 'after'
         })
         .populate({
-            path: "comments",
-            select: ["text", "user"],
-            populate: {
-                path: "user",
-                select: "fullName avatarUrl" // Загрузка имени и аватара пользователя комментария
-            }
+            path: "user",
+            select: ["fullName", "avatarUrl"]
+        })
+        .populate({
+        path: "comments",
+        select: ["text", "user"],
+        populate: {
+            path: "user",
+            select: "fullName avatarUrl" // Загрузка имени и аватара пользователя комментария
+        }
         })
         .exec()
         .then((doc, err) => {
