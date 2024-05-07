@@ -132,7 +132,7 @@ export const update = async (req, res) => {
             title: req.body.title,
             text: req.body.text,
             tags: req.body.tags,
-            imageUrl: `https://traaaaaaader-blog-api.onrender.com/${req.body.imageUrl}`,
+            imageUrl: req.body.imageUrl,
             user: req.userId,
         }).then((doc, err) => {
             if (err) {
@@ -166,7 +166,7 @@ export const create = async (req, res) => {
             title: req.body.title,
             text: req.body.text,
             tags: req.body.tags,
-            imageUrl: `https://traaaaaaader-blog-api.onrender.com/${req.body.imageUrl}`,
+            imageUrl: req.body.imageUrl,
             user: req.userId,
         });
 
